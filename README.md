@@ -11,23 +11,13 @@ It downloads the latest release, moves it to `/opt/godot/`, adds an application 
 - Downloads an official Godot icon.
 - Ensures everything is executable and properly set up.
 
-## Installation & Usage
+## Usage
 
-1. Clone this repository:
-
-```bash
-git clone https://github.com/your-username/godot-installer.git
-cd godot-installer
-```
-
-2. Run the script
+Install Godot in one command
 
 ```bash
-chmod +x install_godot.sh
-./install_godot.sh
+curl -sSL https://raw.githubusercontent.com/kurisusan/godot-ubuntu-installer/main/install.sh | bash
 ```
-
-3. Once installed, search for "Godot" in your application menu and pin it for quick access.
 
 ## Notes
 
