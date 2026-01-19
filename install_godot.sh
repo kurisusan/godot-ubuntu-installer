@@ -11,13 +11,13 @@ DESKTOP_ENTRY="$HOME/.local/share/applications/godot.desktop"
 DOWNLOAD_DIR="/tmp"
 
 if ! command -v curl &> /dev/null || ! command -v wget &> /dev/null; then
-    echo "Errorr : curl and wget are required to run this script."
+    echo "Error : curl and wget are required to run this script."
     exit 1
 fi
 
 sudo mkdir -p "$GODOT_DIR"
 
-echo "Downloadig Godot from : $GODOT_URL"
+echo "Downloading Godot from : $GODOT_URL"
 wget -q --show-progress -O $DOWNLOAD_DIR/Godot.zip "$GODOT_URL"
 
 unzip -o $DOWNLOAD_DIR/Godot.zip -d $DOWNLOAD_DIR/
@@ -29,7 +29,7 @@ wget -q -O "$DOWNLOAD_DIR/godot_icon.png" "$ICON_URL"
 echo "Moving icon near the executable"
 sudo mv "$DOWNLOAD_DIR/godot_icon.png" "$ICON_PATH"
 
-echo "Create shortcut..."
+echo "Creating shortcut..."
 mkdir -p "$(dirname "$DESKTOP_ENTRY")"
 cat <<EOF > "$DESKTOP_ENTRY"
 [Desktop Entry]
@@ -44,4 +44,4 @@ EOF
 chmod +x "$DESKTOP_ENTRY"
 update-desktop-database ~/.local/share/applications
 
-echo "Installation done. Start Godot from the applications menu !"
+echo "Installation done. Start Godot from the applications menu!"
