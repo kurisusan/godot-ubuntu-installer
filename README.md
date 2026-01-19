@@ -16,7 +16,7 @@ It downloads the latest release, moves it to `/opt/godot/`, adds an application 
 Install Godot in one command
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/kurisusan/godot-ubuntu-installer/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/kurisusan/godot-ubuntu-installer/main/install_godot.sh | bash
 ```
 
 ## Notes
