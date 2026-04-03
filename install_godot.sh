@@ -1,33 +1,47 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
-GODOT_URL=$(curl -s https://api.github.com/repos/godotengine/godot/releases/latest | grep -Eo 'https://github.com/godotengine/godot/releases/download/.*/Godot_v.*_linux.x86_64.zip' | head -n 1)
 GODOT_DIR="/opt/godot"
 GODOT_EXEC="$GODOT_DIR/Godot"
 ICON_URL="https://upload.wikimedia.org/wikipedia/commons/6/6a/Godot_icon.svg"
-ICON_PATH="$GODOT_DIR/icon.png"
+ICON_PATH="$GODOT_DIR/icon.svg"
 DESKTOP_ENTRY="$HOME/.local/share/applications/godot.desktop"
-DOWNLOAD_DIR="/tmp"
+DOWNLOAD_DIR="/tmp/godot_install"
 
-if ! command -v curl &> /dev/null || ! command -v wget &> /dev/null; then
-    echo "Error : curl and wget are required to run this script."
+for cmd in curl wget unzip; do
+    if ! command -v "$cmd" &> /dev/null; then
+        echo "Error: '$cmd' is required to run this script."
+        exit 1
+    fi
+done
+
+GODOT_URL=$(curl -s https://api.github.com/repos/godotengine/godot/releases/latest | grep -Eo 'https://github.com/godotengine/godot/releases/download/.*/Godot_v.*_linux.x86_64.zip' | head -n 1)
+
+if [ -z "$GODOT_URL" ]; then
+    echo "Error: could not find the latest Godot download URL."
     exit 1
 fi
 
+mkdir -p "$DOWNLOAD_DIR"
 sudo mkdir -p "$GODOT_DIR"
 
-echo "Downloading Godot from : $GODOT_URL"
-wget -q --show-progress -O $DOWNLOAD_DIR/Godot.zip "$GODOT_URL"
+cleanup() {
+    rm -rf "$DOWNLOAD_DIR"
+}
+trap cleanup EXIT
 
-unzip -o $DOWNLOAD_DIR/Godot.zip -d $DOWNLOAD_DIR/
-sudo mv $DOWNLOAD_DIR/Godot_v*_linux.x86_64 "$GODOT_EXEC"
+echo "Downloading Godot from: $GODOT_URL"
+wget -q --show-progress -O "$DOWNLOAD_DIR/Godot.zip" "$GODOT_URL"
+
+unzip -o "$DOWNLOAD_DIR/Godot.zip" -d "$DOWNLOAD_DIR/"
+sudo mv "$DOWNLOAD_DIR"/Godot_v*_linux.x86_64 "$GODOT_EXEC"
 sudo chmod +x "$GODOT_EXEC"
 
 echo "Downloading icon..."
-wget -q -O "$DOWNLOAD_DIR/godot_icon.png" "$ICON_URL"
+wget -q -O "$DOWNLOAD_DIR/godot_icon.svg" "$ICON_URL"
 echo "Moving icon near the executable"
-sudo mv "$DOWNLOAD_DIR/godot_icon.png" "$ICON_PATH"
+sudo mv "$DOWNLOAD_DIR/godot_icon.svg" "$ICON_PATH"
 
 echo "Creating shortcut..."
 mkdir -p "$(dirname "$DESKTOP_ENTRY")"
