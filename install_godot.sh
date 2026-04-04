@@ -4,10 +4,21 @@ set -euo pipefail
 
 GODOT_DIR="/opt/godot"
 GODOT_EXEC="$GODOT_DIR/Godot"
+GODOT_WRAPPER="$GODOT_DIR/godot-launcher"
 ICON_URL="https://upload.wikimedia.org/wikipedia/commons/6/6a/Godot_icon.svg"
 ICON_PATH="$GODOT_DIR/icon.svg"
 DESKTOP_ENTRY="$HOME/.local/share/applications/godot.desktop"
 DOWNLOAD_DIR="/tmp/godot_install"
+
+if [ "${1:-}" = "--remove" ]; then
+    echo "Removing Godot..."
+    sudo rm -rf "$GODOT_DIR"
+    sudo rm -f /usr/local/bin/godot
+    rm -f "$DESKTOP_ENTRY"
+    update-desktop-database ~/.local/share/applications
+    echo "Godot has been removed."
+    exit 0
+fi
 
 EDITION=""
 if [ "${1:-}" = "--classic" ]; then
@@ -74,19 +85,31 @@ wget -q -O "$DOWNLOAD_DIR/godot_icon.svg" "$ICON_URL"
 echo "Moving icon near the executable"
 sudo mv "$DOWNLOAD_DIR/godot_icon.svg" "$ICON_PATH"
 
+echo "Creating launcher wrapper (auto-detects Wayland)..."
+sudo tee "$GODOT_WRAPPER" > /dev/null <<'WRAPPER'
+#!/bin/bash
+ARGS=()
+if [ "${XDG_SESSION_TYPE:-}" = "wayland" ]; then
+    ARGS+=(--display-driver wayland)
+fi
+exec /opt/godot/Godot "$@" "${ARGS[@]}"
+WRAPPER
+sudo chmod +x "$GODOT_WRAPPER"
+
 echo "Adding Godot to PATH..."
-sudo ln -sf "$GODOT_EXEC" /usr/local/bin/godot
+sudo ln -sf "$GODOT_WRAPPER" /usr/local/bin/godot
 
 echo "Creating shortcut..."
 mkdir -p "$(dirname "$DESKTOP_ENTRY")"
 cat <<EOF > "$DESKTOP_ENTRY"
 [Desktop Entry]
 Name=Godot
-Exec=$GODOT_EXEC
+Exec=$GODOT_WRAPPER
 Icon=$ICON_PATH
 Type=Application
 Categories=Development;
 Terminal=false
+StartupWMClass=Godot
 EOF
 
 chmod +x "$DESKTOP_ENTRY"
