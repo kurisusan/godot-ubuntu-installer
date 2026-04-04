@@ -7,7 +7,7 @@ GODOT_EXEC="$GODOT_DIR/Godot"
 GODOT_WRAPPER="$GODOT_DIR/godot-launcher"
 ICON_URL="https://upload.wikimedia.org/wikipedia/commons/6/6a/Godot_icon.svg"
 ICON_PATH="$GODOT_DIR/icon.svg"
-DESKTOP_ENTRY="$HOME/.local/share/applications/godot.desktop"
+DESKTOP_ENTRY="$HOME/.local/share/applications/org.godotengine.Editor.desktop"
 DOWNLOAD_DIR="/tmp/godot_install"
 
 if [ "${1:-}" = "--remove" ]; then
@@ -109,7 +109,7 @@ Icon=$ICON_PATH
 Type=Application
 Categories=Development;
 Terminal=false
-StartupWMClass=Godot
+StartupWMClass=org.godotengine.Editor
 EOF
 
 chmod +x "$DESKTOP_ENTRY"
