@@ -74,6 +74,9 @@ wget -q -O "$DOWNLOAD_DIR/godot_icon.svg" "$ICON_URL"
 echo "Moving icon near the executable"
 sudo mv "$DOWNLOAD_DIR/godot_icon.svg" "$ICON_PATH"
 
+echo "Adding Godot to PATH..."
+sudo ln -sf "$GODOT_EXEC" /usr/local/bin/godot
+
 echo "Creating shortcut..."
 mkdir -p "$(dirname "$DESKTOP_ENTRY")"
 cat <<EOF > "$DESKTOP_ENTRY"
