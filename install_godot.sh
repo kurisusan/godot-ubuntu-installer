@@ -9,6 +9,25 @@ ICON_PATH="$GODOT_DIR/icon.svg"
 DESKTOP_ENTRY="$HOME/.local/share/applications/godot.desktop"
 DOWNLOAD_DIR="/tmp/godot_install"
 
+EDITION=""
+if [ "${1:-}" = "--classic" ]; then
+    EDITION="classic"
+elif [ "${1:-}" = "--mono" ]; then
+    EDITION="mono"
+fi
+
+if [ -z "$EDITION" ]; then
+    echo "Which edition of Godot do you want to install?"
+    echo "  1) Godot (classic - GDScript)"
+    echo "  2) Godot Mono (C# support)"
+    read -rp "Enter your choice [1/2]: " choice
+    case "$choice" in
+        1) EDITION="classic" ;;
+        2) EDITION="mono" ;;
+        *) echo "Error: invalid choice."; exit 1 ;;
+    esac
+fi
+
 for cmd in curl wget unzip; do
     if ! command -v "$cmd" &> /dev/null; then
         echo "Error: '$cmd' is required to run this script."
@@ -16,7 +35,11 @@ for cmd in curl wget unzip; do
     fi
 done
 
-GODOT_URL=$(curl -s https://api.github.com/repos/godotengine/godot/releases/latest | grep -Eo 'https://github.com/godotengine/godot/releases/download/.*/Godot_v.*_linux.x86_64.zip' | head -n 1)
+if [ "$EDITION" = "mono" ]; then
+    GODOT_URL=$(curl -s https://api.github.com/repos/godotengine/godot/releases/latest | grep -Eo 'https://github.com/godotengine/godot/releases/download/.*/Godot_v.*_mono_linux_x86_64.zip' | head -n 1)
+else
+    GODOT_URL=$(curl -s https://api.github.com/repos/godotengine/godot/releases/latest | grep -Eo 'https://github.com/godotengine/godot/releases/download/.*/Godot_v.*_linux.x86_64.zip' | head -n 1)
+fi
 
 if [ -z "$GODOT_URL" ]; then
     echo "Error: could not find the latest Godot download URL."
@@ -31,11 +54,19 @@ cleanup() {
 }
 trap cleanup EXIT
 
-echo "Downloading Godot from: $GODOT_URL"
+echo "Downloading Godot ($EDITION) from: $GODOT_URL"
 wget -q --show-progress -O "$DOWNLOAD_DIR/Godot.zip" "$GODOT_URL"
 
 unzip -o "$DOWNLOAD_DIR/Godot.zip" -d "$DOWNLOAD_DIR/"
-sudo mv "$DOWNLOAD_DIR"/Godot_v*_linux.x86_64 "$GODOT_EXEC"
+
+if [ "$EDITION" = "mono" ]; then
+    MONO_DIR=$(find "$DOWNLOAD_DIR" -maxdepth 1 -type d -name "Godot_v*_mono_linux_x86_64" | head -n 1)
+    sudo cp -r "$MONO_DIR"/. "$GODOT_DIR/"
+    MONO_BIN=$(find "$GODOT_DIR" -maxdepth 1 -type f -name "Godot_v*" | head -n 1)
+    sudo mv "$MONO_BIN" "$GODOT_EXEC"
+else
+    sudo mv "$DOWNLOAD_DIR"/Godot_v*_linux.x86_64 "$GODOT_EXEC"
+fi
 sudo chmod +x "$GODOT_EXEC"
 
 echo "Downloading icon..."
